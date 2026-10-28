@@ -1,4 +1,6 @@
-import { site } from '~/data/content';
+import Link from "next/link";
+
+import { site } from "~/data/content";
 
 export default function FreeConsult() {
   return (
@@ -26,9 +28,9 @@ export default function FreeConsult() {
               especialistas y recibe un plan hecho a tu medida.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <a href="#contacto" className="btn-primary">
+              <Link href="/contacto" className="btn-primary">
                 Agenda tu consulta
-              </a>
+              </Link>
               <a
                 href={`https://wa.me/${site.whatsappNumber}`}
                 target="_blank"

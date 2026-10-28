@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
 
-import { site, categories, locations } from "~/data/content";
+import { site, categories, locations, allTreatments } from "~/data/content";
 import { api } from "~/trpc/react";
 
 type FieldErrors = Partial<Record<
@@ -13,6 +14,22 @@ type FieldErrors = Partial<Record<
 export default function ContactForm() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitted, setSubmitted] = useState(false);
+
+  const searchParams = useSearchParams();
+  const prefill = useMemo(() => {
+    const slug = searchParams?.get("tratamiento") ?? "";
+    if (!slug) return "";
+    // Accept either a treatment slug (e.g. "hydraglow-facial") or a category
+    // title we might have put in the URL.
+    const match = allTreatments.find(
+      ({ category, treatment }) =>
+        treatment.slug === slug || category.slug === slug,
+    );
+    if (match) return match.treatment.name;
+    const cat = categories.find((c) => c.slug === slug);
+    if (cat) return cat.title;
+    return "";
+  }, [searchParams]);
 
   const createLead = api.contact.createLead.useMutation({
     onSuccess: () => {
@@ -147,18 +164,36 @@ export default function ContactForm() {
               <select
                 id="tratamiento"
                 name="tratamiento"
-                defaultValue=""
+                key={prefill}
+                defaultValue={prefill}
                 aria-invalid={errors.tratamiento ? true : undefined}
                 className="w-full rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm text-ink-900 focus:border-rose-gold focus:outline-none focus:ring-2 focus:ring-rose-gold/30"
               >
                 <option value="" disabled>
                   Selecciona una opción
                 </option>
-                {categories.map((c) => (
-                  <option key={c.slug} value={c.title}>
-                    {c.title}
-                  </option>
-                ))}
+                {prefill &&
+                  !categories.some((c) => c.title === prefill) &&
+                  !allTreatments.some(
+                    ({ treatment }) => treatment.name === prefill,
+                  ) && <option value={prefill}>{prefill}</option>}
+                <optgroup label="Categorías">
+                  {categories.map((c) => (
+                    <option key={c.slug} value={c.title}>
+                      {c.title}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Tratamientos">
+                  {allTreatments.map(({ treatment }) => (
+                    <option
+                      key={treatment.slug}
+                      value={treatment.name}
+                    >
+                      {treatment.name}
+                    </option>
+                  ))}
+                </optgroup>
                 <option value="Otro">Otro</option>
               </select>
               {errors.tratamiento && (

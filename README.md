@@ -25,36 +25,53 @@ toques _rose gold_ y tipografías serif/sans premium.
 ```
 .
 ├── prisma/
-│   └── schema.prisma         # Modelo Lead + modelos NextAuth
-├── public/                   # Favicon, robots.txt
+│   └── schema.prisma                           # Modelo Lead + modelos NextAuth
+├── public/                                     # Favicon, robots.txt
 ├── src/
 │   ├── app/
 │   │   ├── api/
-│   │   │   ├── auth/[...nextauth]/route.ts   # NextAuth handlers
-│   │   │   └── trpc/[trpc]/route.ts          # tRPC handler
-│   │   ├── layout.tsx        # Fuentes, metadatos SEO, TRPCProvider
-│   │   └── page.tsx          # Homepage (todas las secciones)
-│   ├── components/           # UI de marketing (Header, Hero, ...)
+│   │   │   ├── auth/[...nextauth]/route.ts     # NextAuth handlers
+│   │   │   └── trpc/[trpc]/route.ts            # tRPC handler
+│   │   ├── layout.tsx                          # Fuentes, metadatos SEO, TRPCProvider
+│   │   ├── page.tsx                            # Homepage
+│   │   ├── not-found.tsx                       # 404 personalizado
+│   │   ├── sitemap.ts                          # /sitemap.xml generado
+│   │   ├── tratamientos/
+│   │   │   ├── page.tsx                        # Índice de categorías
+│   │   │   └── [categoria]/
+│   │   │       ├── page.tsx                    # Listado de la categoría
+│   │   │       └── [tratamiento]/page.tsx      # Detalle del tratamiento
+│   │   ├── promociones/page.tsx
+│   │   ├── nosotros/page.tsx
+│   │   ├── tecnologia/page.tsx
+│   │   ├── sedes/page.tsx
+│   │   └── contacto/page.tsx
+│   ├── components/                             # UI compartida (Header, Footer, …)
 │   ├── data/
-│   │   └── content.ts        # ⭐ Único archivo de contenido editable
-│   ├── env.js                # Validación de variables de entorno (t3-env)
+│   │   └── content.ts                          # ⭐ Único archivo de contenido editable
+│   ├── env.js                                  # Validación de env vars (t3-env)
 │   ├── server/
 │   │   ├── api/
 │   │   │   ├── root.ts
 │   │   │   ├── trpc.ts
 │   │   │   └── routers/
-│   │   │       └── contact.ts  # mutación createLead + schema zod
-│   │   ├── auth/             # NextAuth config
-│   │   └── db.ts             # Cliente Prisma
+│   │   │       └── contact.ts                  # mutación createLead + schema zod
+│   │   ├── auth/                               # NextAuth config
+│   │   └── db.ts                               # Cliente Prisma
 │   ├── styles/
-│   │   └── globals.css       # Theme Tailwind v4 + utilidades
-│   └── trpc/                 # Cliente/proveedor tRPC
+│   │   └── globals.css                         # Theme Tailwind v4 + utilidades
+│   └── trpc/                                   # Cliente/proveedor tRPC
 └── package.json
 ```
 
-Toda la copia editorial, promociones, testimonios, sedes, equipo médico, etc.
-viven en `src/data/content.ts` — para cambiar la marca basta con editar ese
-archivo.
+Todas las páginas de marketing son estáticas (`force-static` + `generateStaticParams`): el build genera HTML prerenderizado para la home, cada sección (`/promociones`, `/nosotros`, `/tecnologia`, `/sedes`, `/contacto`), cada categoría y cada tratamiento. Sólo las rutas `/api/trpc/*` y `/api/auth/*` corren como funciones dinámicas.
+
+Toda la copia editorial — categorías, tratamientos (con slug, descripción
+larga, beneficios, para quién es, duración, sesiones, recuperación, precio y
+FAQ), promociones, testimonios, sedes, equipo médico y nav — vive en
+`src/data/content.ts`. Al editar la lista de tratamientos de una categoría,
+tanto el detalle como el listado y el sitemap se actualizan automáticamente
+gracias a `generateStaticParams`.
 
 ---
 
@@ -110,14 +127,24 @@ Todo el contenido del sitio está centralizado en
 - `nav` → links del header/footer
 - `hero` → eyebrow, título, subtítulo, CTAs
 - `trustBadges` → fila de insignias bajo el hero
-- `categories` → tarjetas de categorías de tratamiento
-- `featured` → grid de tratamientos destacados
-- `promos` → promociones del mes
-- `doctors` → equipo médico
-- `technology` → tecnología usada en la clínica
+- `categoriesFull` → catálogo completo: cada categoría tiene `slug`, `title`,
+  `short`, `long`, `icon` y un array `treatments[]`. Cada tratamiento tiene
+  `slug`, `name`, `short`, `long`, `benefits[]`, `whoFor`, `duration`,
+  `sessions`, `recovery`, `priceFrom` y `faq[]`. Esto alimenta
+  `/tratamientos`, `/tratamientos/[categoria]`,
+  `/tratamientos/[categoria]/[tratamiento]` y el sitemap
+- `featured` → selección (categorySlug + treatmentSlug) para el grid destacado
+  de la home
+- `promos` → promociones del mes (incluyen `href` al tratamiento o sección)
+- `doctors` → equipo médico (`/nosotros`)
+- `technology` → equipos (`/tecnologia`)
 - `testimonials` → reseñas (ficticias)
-- `locations` → sedes con teléfono/WhatsApp/horarios
-- `footer` → horario, texto legal
+- `locations` → sedes con `slug`, teléfono, WhatsApp y horarios (`/sedes`)
+- `footer` → horario y texto legal
+
+El formulario de contacto puede prefijar el tratamiento vía query param, por
+ejemplo `/contacto?tratamiento=hydraglow-facial` — el slug acepta tanto un
+`treatment.slug` como un `category.slug`.
 
 Al cambiar la marca real, también sustituye:
 
@@ -125,6 +152,25 @@ Al cambiar la marca real, también sustituye:
 - las claves OG/SEO en `src/app/layout.tsx` si quieres un título distinto
 
 ---
+
+## Páginas
+
+| Ruta                                          | Qué muestra                                                        |
+| --------------------------------------------- | ------------------------------------------------------------------ |
+| `/`                                           | Home: hero, badges, categorías, destacados, promos, equipo, sedes  |
+| `/tratamientos`                               | Índice de todas las categorías                                     |
+| `/tratamientos/[categoria]`                   | Listado de los tratamientos de una categoría                       |
+| `/tratamientos/[categoria]/[tratamiento]`     | Detalle: descripción, beneficios, para quién, duración, FAQ, CTA   |
+| `/promociones`                                | Promociones del mes                                                |
+| `/nosotros`                                   | Filosofía de la clínica, badges, equipo médico y testimonios       |
+| `/tecnologia`                                 | Equipos y protocolos                                               |
+| `/sedes`                                      | Sedes con teléfono, WhatsApp, horario y referencia de mapa         |
+| `/contacto`                                   | Formulario tRPC (acepta `?tratamiento=<slug>` para prefill)        |
+| `/sitemap.xml`                                | Sitemap generado automáticamente desde `content.ts`                |
+
+Cada página sub-ruta tiene **breadcrumbs**, **metadata SEO en español** por página
+(title + description + canonical + OpenGraph) y hay un **404 personalizado** en
+`src/app/not-found.tsx`.
 
 ## Formulario de contacto (tRPC + Prisma + zod)
 

@@ -1,49 +1,67 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { nav, site, hero } from '~/data/content';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+
+import { nav, site, hero } from "~/data/content";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-cream-200/70 bg-cream-50/85 backdrop-blur">
       <div className="container-x flex h-16 items-center justify-between md:h-20">
-        <a
-          href="#inicio"
+        <Link
+          href="/"
           className="font-serif text-xl font-semibold tracking-tight text-ink-900 md:text-2xl"
           aria-label={`${site.brand} — inicio`}
         >
           {site.brand}
           <span className="ml-1 text-rose-gold">·</span>
-        </a>
+        </Link>
 
         <nav aria-label="Principal" className="hidden md:block">
-          <ul className="flex items-center gap-7 text-sm text-ink-700">
-            {nav.map((item) => (
-              <li key={item.href}>
-                <a
-                  href={item.href}
-                  className="transition hover:text-rose-gold"
-                >
-                  {item.label}
-                </a>
-              </li>
-            ))}
+          <ul className="flex items-center gap-6 text-sm text-ink-700">
+            {nav.map((item) => {
+              const active =
+                item.href === "/"
+                  ? pathname === "/"
+                  : pathname === item.href ||
+                    pathname.startsWith(item.href + "/");
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    aria-current={active ? "page" : undefined}
+                    className={`transition hover:text-rose-gold ${
+                      active ? "text-rose-gold" : ""
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
         <div className="hidden md:block">
-          <a href={hero.ctaPrimary.href} className="btn-primary">
+          <Link href={hero.ctaPrimary.href} className="btn-primary">
             {hero.ctaPrimary.label}
-          </a>
+          </Link>
         </div>
 
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-ink-900/15 text-ink-900 md:hidden"
-          aria-label="Abrir menú"
+          aria-label={open ? "Cerrar menú" : "Abrir menú"}
           aria-expanded={open}
           aria-controls="mobile-nav"
         >
@@ -83,23 +101,18 @@ export default function Header() {
           <ul className="container-x flex flex-col gap-1 py-3 text-sm text-ink-700">
             {nav.map((item) => (
               <li key={item.href}>
-                <a
+                <Link
                   href={item.href}
-                  onClick={() => setOpen(false)}
                   className="block rounded-lg px-3 py-3 transition hover:bg-cream-100 hover:text-rose-gold"
                 >
                   {item.label}
-                </a>
+                </Link>
               </li>
             ))}
             <li className="pt-2">
-              <a
-                href={hero.ctaPrimary.href}
-                onClick={() => setOpen(false)}
-                className="btn-primary w-full"
-              >
+              <Link href={hero.ctaPrimary.href} className="btn-primary w-full">
                 {hero.ctaPrimary.label}
-              </a>
+              </Link>
             </li>
           </ul>
         </nav>

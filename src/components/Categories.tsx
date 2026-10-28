@@ -1,5 +1,7 @@
-import { categories } from '~/data/content';
-import CategoryIcon from '~/components/CategoryIcon';
+import Link from "next/link";
+
+import { categories } from "~/data/content";
+import CategoryIcon from "~/components/CategoryIcon";
 
 export default function Categories() {
   return (
@@ -29,14 +31,14 @@ export default function Categories() {
                 <p className="mt-2 text-sm leading-relaxed text-ink-700">
                   {cat.description}
                 </p>
-                <a
-                  href="#contacto"
+                <Link
+                  href={`/tratamientos/${cat.slug}`}
                   className="mt-5 inline-flex items-center gap-1 text-sm font-medium text-rose-gold transition hover:text-ink-900"
                   aria-label={`Ver más sobre ${cat.title}`}
                 >
                   Ver más
                   <span aria-hidden="true">→</span>
-                </a>
+                </Link>
               </article>
             </li>
           ))}

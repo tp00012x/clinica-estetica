@@ -1,14 +1,20 @@
-import { site, nav, footer } from '~/data/content';
+import Link from "next/link";
+
+import { site, nav, footer } from "~/data/content";
 
 export default function Footer() {
   return (
     <footer className="bg-ink-900 text-cream-100">
       <div className="container-x grid gap-10 py-14 md:grid-cols-4">
         <div className="md:col-span-2">
-          <p className="font-serif text-2xl text-cream-50">
+          <Link
+            href="/"
+            className="font-serif text-2xl text-cream-50"
+            aria-label={`${site.brand} — inicio`}
+          >
             {site.brand}
             <span className="ml-1 text-rose-gold">·</span>
-          </p>
+          </Link>
           <p className="mt-3 max-w-sm text-sm text-cream-100/80">
             {site.description}
           </p>
@@ -25,9 +31,9 @@ export default function Footer() {
           <ul className="mt-3 space-y-2 text-sm">
             {nav.map((n) => (
               <li key={n.href}>
-                <a href={n.href} className="hover:text-rose-blush">
+                <Link href={n.href} className="hover:text-rose-blush">
                   {n.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>

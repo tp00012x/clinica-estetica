@@ -1,4 +1,6 @@
-import { hero, trustBadges } from '~/data/content';
+import Link from "next/link";
+
+import { hero, trustBadges } from "~/data/content";
 
 export default function Hero() {
   return (
@@ -27,12 +29,12 @@ export default function Hero() {
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <a href={hero.ctaPrimary.href} className="btn-primary">
+            <Link href={hero.ctaPrimary.href} className="btn-primary">
               {hero.ctaPrimary.label}
-            </a>
-            <a href={hero.ctaSecondary.href} className="btn-outline">
+            </Link>
+            <Link href={hero.ctaSecondary.href} className="btn-outline">
               {hero.ctaSecondary.label}
-            </a>
+            </Link>
           </div>
         </div>
 

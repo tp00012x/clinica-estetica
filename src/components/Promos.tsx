@@ -1,16 +1,23 @@
-import { promos } from '~/data/content';
+import Link from "next/link";
+
+import { promos } from "~/data/content";
 
 export default function Promos() {
   return (
     <section id="promos" className="section">
       <div className="container-x">
-        <div className="max-w-2xl">
-          <p className="eyebrow">Promociones del mes</p>
-          <h2 className="section-title">Beneficios exclusivos este mes</h2>
-          <p className="section-sub">
-            Promociones limitadas en nuestros tratamientos más solicitados.
-            Consulta con nuestras asesoras para reservar tu cupo.
-          </p>
+        <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+          <div className="max-w-2xl">
+            <p className="eyebrow">Promociones del mes</p>
+            <h2 className="section-title">Beneficios exclusivos este mes</h2>
+            <p className="section-sub">
+              Promociones limitadas en nuestros tratamientos más solicitados.
+              Consulta con nuestras asesoras para reservar tu cupo.
+            </p>
+          </div>
+          <Link href="/promociones" className="btn-outline">
+            Ver todas
+          </Link>
         </div>
 
         <ul className="mt-12 grid gap-6 md:grid-cols-3">
@@ -28,13 +35,13 @@ export default function Promos() {
                 <p className="relative mt-3 text-sm leading-relaxed text-cream-100/85">
                   {p.description}
                 </p>
-                <a
-                  href="#contacto"
+                <Link
+                  href={p.href}
                   className="relative mt-6 inline-flex items-center gap-1 text-sm font-medium text-rose-blush transition hover:text-white"
                 >
                   {p.cta}
                   <span aria-hidden="true">→</span>
-                </a>
+                </Link>
               </article>
             </li>
           ))}
