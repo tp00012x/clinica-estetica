@@ -9,8 +9,15 @@ export const site = {
   tagline: "Medicina estética y cirugía plástica en Lima",
   description:
     "Clínica de medicina estética y cirugía plástica en Lima. Tratamientos faciales, corporales, depilación láser y cirugía estética con tecnología de alta gama y médicos certificados.",
-  url: "https://www.lumina-estetica.example",
-  phoneDisplay: "+51 (01) 555 0123",
+  // Canonical origin is resolved at runtime from NEXT_PUBLIC_SITE_URL
+  // (with Vercel + localhost fallbacks). See src/lib/site-url.ts.
+  // Company metadata used in /privacidad and legal notices.
+  legal: {
+    companyName: "Lumina Estética S.A.C.",
+    ruc: "20000000000",
+    jurisdiction: "Lima, Perú",
+  },
+  phoneDisplay: "+51 1 555 0123",
   phoneHref: "+5115550123",
   whatsappDisplay: "+51 999 000 111",
   whatsappNumber: "51999000111",
@@ -35,6 +42,9 @@ export const nav: Array<{ label: string; href: string }> = [
   { label: "Contacto", href: "/contacto" },
 ];
 
+// Legacy single-URL export was removed. Use `getSiteUrl()` from
+// src/lib/site-url.ts for anything that needs the canonical origin.
+
 // ---- Hero / shared blocks -------------------------------------------------
 
 export const hero = {
@@ -50,15 +60,30 @@ export const hero = {
 };
 
 export const trustBadges = [
-  { title: "Clínica supervisada", subtitle: "Autorizada y acreditada" },
-  { title: "+12 años de experiencia", subtitle: "Casos reales y resultados" },
-  { title: "Marcas aprobadas por FDA", subtitle: "Insumos de primera calidad" },
-  { title: "Médicos certificados", subtitle: "Especialistas colegiados" },
   {
-    title: "Tecnología de alta gama",
-    subtitle: "Equipos de última generación",
+    title: "Equipo médico colegiado",
+    subtitle: "Dermatología, estética y cirugía",
   },
-  { title: "Consulta gratuita", subtitle: "Evaluación personalizada" },
+  {
+    title: "Primera evaluación sin costo",
+    subtitle: "Diagnóstico y plan a medida",
+  },
+  {
+    title: "Insumos y equipos certificados",
+    subtitle: "Trazabilidad y lote verificable",
+  },
+  {
+    title: "Protocolos basados en evidencia",
+    subtitle: "Revisados cada temporada",
+  },
+  {
+    title: "Más de una década atendiendo en Lima",
+    subtitle: "Pacientes nacionales y del extranjero",
+  },
+  {
+    title: "Seguimiento posterior incluido",
+    subtitle: "Acompañamiento después del alta",
+  },
 ];
 
 // ---- Catalog --------------------------------------------------------------
@@ -1100,8 +1125,10 @@ export const locations = [
     slug: "miraflores",
     name: "Sede Miraflores",
     address: "Av. Ejemplo 123, Miraflores, Lima",
-    phone: "+51 (01) 555 0123",
+    phone: "+51 1 555 0123",
+    phoneHref: "+5115550123",
     whatsapp: "+51 999 000 111",
+    whatsappHref: "51999000111",
     hours: "Lun a Sáb · 9:00 – 20:00",
     mapHref: "https://maps.google.com/?q=Miraflores+Lima",
   },
@@ -1109,8 +1136,10 @@ export const locations = [
     slug: "san-isidro",
     name: "Sede San Isidro",
     address: "Calle Ejemplo 456, San Isidro, Lima",
-    phone: "+51 (01) 555 0456",
+    phone: "+51 1 555 0456",
+    phoneHref: "+5115550456",
     whatsapp: "+51 999 000 222",
+    whatsappHref: "51999000222",
     hours: "Lun a Sáb · 10:00 – 20:00",
     mapHref: "https://maps.google.com/?q=San+Isidro+Lima",
   },
@@ -1118,8 +1147,10 @@ export const locations = [
     slug: "surco",
     name: "Sede Surco",
     address: "Av. Ejemplo 789, Santiago de Surco, Lima",
-    phone: "+51 (01) 555 0789",
+    phone: "+51 1 555 0789",
+    phoneHref: "+5115550789",
     whatsapp: "+51 999 000 333",
+    whatsappHref: "51999000333",
     hours: "Mar a Sáb · 10:00 – 19:00",
     mapHref: "https://maps.google.com/?q=Surco+Lima",
   },
@@ -1131,3 +1162,31 @@ export const footer = {
   hours: "Lunes a Sábado · 9:00 – 20:00 h",
   legal: `© ${new Date().getFullYear()} Lumina Estética. Marca ficticia creada con fines de demostración. Todos los datos de contacto, direcciones y promociones son de ejemplo.`,
 };
+
+// ---- Free-consult CTA ----------------------------------------------------
+// Reworked wording and position (now shown further down the page, after the
+// visitor has had a chance to browse the catalog).
+
+export const freeConsult = {
+  eyebrow: "Evaluación personalizada",
+  title: "Diseñemos juntas tu plan de cuidado",
+  subtitle:
+    "Agenda una cita de evaluación sin costo. Revisamos tu historia, tu piel y tus objetivos para recomendarte únicamente los tratamientos que de verdad necesitas.",
+};
+
+// ---- Allowed values for contact form validation --------------------------
+// Server-side we validate `tratamiento` and `sede` against these lists so
+// nobody can POST arbitrary strings into the database.
+
+const extraTreatmentOptions = ["Otro", "Consulta general"] as const;
+
+export const allowedTratamientos = [
+  ...categoriesFull.map((c) => c.title),
+  ...categoriesFull.flatMap((c) => c.treatments.map((t) => t.name)),
+  ...extraTreatmentOptions,
+] as const;
+
+export const allowedSedes = [
+  "Sin preferencia",
+  ...locations.map((l) => l.name),
+] as const;

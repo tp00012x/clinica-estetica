@@ -10,7 +10,10 @@
   --color-cream-100: #f5ece2;
   --color-cream-200: #ecdcc8;
 
-  --color-rose-gold: #b76e79;
+  /* Rose accent — darker than #b76e79 so text/icons meet WCAG AA on the
+     cream backgrounds used across the site. The blush/soft tints are kept
+     for decorative gradients and chip backgrounds only. */
+  --color-rose-gold: #9a4f5b;
   --color-rose-soft: #d9a7a0;
   --color-rose-blush: #f3dcd4;
 

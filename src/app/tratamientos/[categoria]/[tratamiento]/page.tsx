@@ -11,6 +11,7 @@ import {
   getTreatment,
   site,
 } from "~/data/content";
+import { getSiteUrl } from "~/lib/site-url";
 
 export const dynamic = "force-static";
 export const dynamicParams = false;
@@ -34,7 +35,7 @@ export async function generateMetadata({
   if (!match) return { title: "Tratamiento no encontrado" };
 
   const { category, treatment } = match;
-  const url = `${site.url}/tratamientos/${category.slug}/${treatment.slug}`;
+  const url = `${getSiteUrl()}/tratamientos/${category.slug}/${treatment.slug}`;
   return {
     title: treatment.name,
     description: treatment.short,
@@ -68,8 +69,9 @@ export default async function TreatmentPage({
     "@type": "MedicalProcedure",
     name: treatment.name,
     description: treatment.short,
-    url: `${site.url}/tratamientos/${category.slug}/${treatment.slug}`,
-    category: category.title,
+    url: `${getSiteUrl()}/tratamientos/${category.slug}/${treatment.slug}`,
+    procedureType: "https://schema.org/NonInvasiveProcedure",
+    bodyLocation: category.title,
   };
 
   return (

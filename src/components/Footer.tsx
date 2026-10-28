@@ -36,6 +36,11 @@ export default function Footer() {
                 </Link>
               </li>
             ))}
+            <li>
+              <Link href="/privacidad" className="hover:text-rose-blush">
+                Privacidad
+              </Link>
+            </li>
           </ul>
         </div>
 

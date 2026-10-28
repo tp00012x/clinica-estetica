@@ -13,7 +13,11 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
       </a>
 
       <Header />
-      <main id="contenido">{children}</main>
+      {/* Bottom padding leaves room for the fixed WhatsApp button on mobile
+          so it never covers content. On >=sm the button sits in the margin. */}
+      <main id="contenido" className="pb-24 sm:pb-0">
+        {children}
+      </main>
       <Footer />
       <WhatsAppButton />
     </>

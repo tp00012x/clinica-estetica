@@ -1,8 +1,12 @@
 import Link from "next/link";
 
+import { getSiteUrl } from "~/lib/site-url";
+
 export type Crumb = { label: string; href?: string };
 
 export default function Breadcrumbs({ items }: { items: Crumb[] }) {
+  const base = getSiteUrl();
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -10,7 +14,8 @@ export default function Breadcrumbs({ items }: { items: Crumb[] }) {
       "@type": "ListItem",
       position: i + 1,
       name: c.label,
-      item: c.href ? c.href : undefined,
+      // schema.org BreadcrumbList expects absolute URLs for `item`.
+      item: c.href ? `${base}${c.href}` : undefined,
     })),
   };
 

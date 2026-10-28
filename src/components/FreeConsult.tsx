@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { site } from "~/data/content";
+import { freeConsult, site } from "~/data/content";
 
 export default function FreeConsult() {
   return (
@@ -18,14 +18,13 @@ export default function FreeConsult() {
 
           <div className="relative mx-auto max-w-3xl text-center text-ink-900">
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-ink-900/80">
-              Consulta gratuita
+              {freeConsult.eyebrow}
             </p>
             <h2 className="mt-3 font-serif text-3xl leading-tight sm:text-4xl md:text-5xl">
-              ¿No sabes cuál es el tratamiento ideal para ti?
+              {freeConsult.title}
             </h2>
             <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-ink-900/85">
-              Agenda una evaluación personalizada sin costo con nuestras
-              especialistas y recibe un plan hecho a tu medida.
+              {freeConsult.subtitle}
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link href="/contacto" className="btn-primary">

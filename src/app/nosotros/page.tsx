@@ -6,18 +6,19 @@ import Breadcrumbs from "~/components/Breadcrumbs";
 import FreeConsult from "~/components/FreeConsult";
 import Testimonials from "~/components/Testimonials";
 import { doctors, site, trustBadges } from "~/data/content";
+import { getSiteUrl } from "~/lib/site-url";
 
 export const dynamic = "force-static";
 
 export const metadata: Metadata = {
   title: "Nosotros",
   description: `Conoce a ${site.brand}: clínica supervisada en Lima con médicos certificados en medicina estética y cirugía plástica. Más de 12 años de experiencia.`,
-  alternates: { canonical: `${site.url}/nosotros` },
+  alternates: { canonical: `${getSiteUrl()}/nosotros` },
   openGraph: {
     title: `Nosotros | ${site.brand}`,
     description:
       "Clínica supervisada en Lima con médicos certificados en medicina estética y cirugía plástica.",
-    url: `${site.url}/nosotros`,
+    url: `${getSiteUrl()}/nosotros`,
   },
 };
 

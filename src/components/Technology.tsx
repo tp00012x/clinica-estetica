@@ -31,8 +31,8 @@ export default function Technology() {
                 key={t.name}
                 className="flex items-start gap-5 rounded-2xl border border-cream-200 bg-white p-5 shadow-soft"
               >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-blush font-serif text-rose-gold">
-                  {String(i + 1).padStart(2, '0')}
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-gold font-serif text-cream-50">
+                  {String(i + 1).padStart(2, "0")}
                 </span>
                 <div>
                   <h3 className="font-serif text-lg text-ink-900">{t.name}</h3>

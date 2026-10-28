@@ -1,56 +1,115 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
-import { site, categories, locations, allTreatments } from "~/data/content";
+import {
+  site,
+  categories,
+  locations,
+  allTreatments,
+  categoriesFull,
+} from "~/data/content";
 import { api } from "~/trpc/react";
 
-type FieldErrors = Partial<Record<
-  "nombre" | "email" | "telefono" | "tratamiento" | "mensaje",
-  string
->>;
+type FieldName =
+  | "nombre"
+  | "email"
+  | "telefono"
+  | "tratamiento"
+  | "mensaje"
+  | "acepto";
+
+type FieldErrors = Partial<Record<FieldName, string>>;
+
+function resolvePrefill(slug: string): string {
+  if (!slug) return "";
+  // Check categories FIRST so category slugs don't accidentally match the
+  // first treatment inside a category.
+  const cat = categoriesFull.find((c) => c.slug === slug);
+  if (cat) return cat.title;
+  const match = allTreatments.find(
+    ({ treatment }) => treatment.slug === slug,
+  );
+  if (match) return match.treatment.name;
+  return "";
+}
 
 export default function ContactForm() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitted, setSubmitted] = useState(false);
+  const [prefill, setPrefill] = useState<string>("");
 
-  const searchParams = useSearchParams();
-  const prefill = useMemo(() => {
-    const slug = searchParams?.get("tratamiento") ?? "";
-    if (!slug) return "";
-    // Accept either a treatment slug (e.g. "hydraglow-facial") or a category
-    // title we might have put in the URL.
-    const match = allTreatments.find(
-      ({ category, treatment }) =>
-        treatment.slug === slug || category.slug === slug,
-    );
-    if (match) return match.treatment.name;
-    const cat = categories.find((c) => c.slug === slug);
-    if (cat) return cat.title;
-    return "";
-  }, [searchParams]);
+  // Read ?tratamiento=<slug> client-side so the prefill works even when the
+  // page is statically rendered. `useSearchParams()` was unreliable on a
+  // force-static page in production — it returns an empty object during
+  // the prerender and the component instance keeps that stale value.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get("tratamiento") ?? "";
+    setPrefill(resolvePrefill(slug));
+  }, []);
+
+  // Timestamp of when the form mounted — used server-side to detect bots
+  // that submit instantly.
+  const startedAt = useRef<number>(Date.now());
+
+  const formRef = useRef<HTMLFormElement>(null);
+  const refs: Record<FieldName, React.RefObject<HTMLElement | null>> = {
+    nombre: useRef<HTMLInputElement>(null),
+    email: useRef<HTMLInputElement>(null),
+    telefono: useRef<HTMLInputElement>(null),
+    tratamiento: useRef<HTMLSelectElement>(null),
+    mensaje: useRef<HTMLTextAreaElement>(null),
+    acepto: useRef<HTMLInputElement>(null),
+  };
+
+  const focusFirstInvalid = (errs: FieldErrors) => {
+    const order: FieldName[] = [
+      "nombre",
+      "email",
+      "telefono",
+      "tratamiento",
+      "mensaje",
+      "acepto",
+    ];
+    for (const name of order) {
+      if (errs[name]) {
+        const node = refs[name].current;
+        if (node && "focus" in node) node.focus();
+        return;
+      }
+    }
+  };
 
   const createLead = api.contact.createLead.useMutation({
     onSuccess: () => {
       setErrors({});
       setSubmitted(true);
+      formRef.current?.reset();
+      startedAt.current = Date.now();
     },
     onError: (err) => {
-      const fieldErrors = err.data?.zodError?.fieldErrors;
+      const fieldErrors = err.data?.zodError?.fieldErrors as
+        | Record<string, string[] | undefined>
+        | undefined;
       if (fieldErrors) {
         const mapped: FieldErrors = {};
-        for (const key of [
+        const keys: FieldName[] = [
           "nombre",
           "email",
           "telefono",
           "tratamiento",
           "mensaje",
-        ] as const) {
+          "acepto",
+        ];
+        for (const key of keys) {
           const msg = fieldErrors[key]?.[0];
           if (msg) mapped[key] = msg;
         }
         setErrors(mapped);
+        focusFirstInvalid(mapped);
       }
     },
   });
@@ -61,19 +120,17 @@ export default function ContactForm() {
     const form = e.currentTarget;
     const data = new FormData(form);
 
-    createLead.mutate(
-      {
-        nombre: (data.get("nombre") ?? "").toString(),
-        email: (data.get("email") ?? "").toString(),
-        telefono: (data.get("telefono") ?? "").toString(),
-        tratamiento: (data.get("tratamiento") ?? "").toString(),
-        mensaje: (data.get("mensaje") ?? "").toString(),
-        sede: (data.get("sede") ?? "").toString() || undefined,
-      },
-      {
-        onSuccess: () => form.reset(),
-      },
-    );
+    createLead.mutate({
+      nombre: (data.get("nombre") ?? "").toString(),
+      email: (data.get("email") ?? "").toString(),
+      telefono: (data.get("telefono") ?? "").toString(),
+      tratamiento: (data.get("tratamiento") ?? "").toString(),
+      mensaje: (data.get("mensaje") ?? "").toString(),
+      sede: (data.get("sede") ?? "").toString() || undefined,
+      acepto: data.get("acepto") === "on" ? true : (false as unknown as true),
+      website: (data.get("website") ?? "").toString(),
+      startedAt: startedAt.current,
+    });
   }
 
   const serverError =
@@ -128,16 +185,50 @@ export default function ContactForm() {
         </div>
 
         <form
+          ref={formRef}
+          method="post"
+          action="/api/trpc/contact.createLead"
           onSubmit={handleSubmit}
           noValidate
           aria-describedby="form-status"
           className="rounded-3xl border border-cream-200 bg-white p-6 shadow-soft md:col-span-7 md:p-8"
         >
+          {/* Honeypot — hidden from users with CSS + aria-hidden + tabindex=-1. */}
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              left: "-10000px",
+              top: "auto",
+              width: "1px",
+              height: "1px",
+              overflow: "hidden",
+            }}
+          >
+            <label htmlFor="website">
+              No completes este campo
+              <input
+                id="website"
+                name="website"
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+              />
+            </label>
+          </div>
+
+          <p className="mb-5 text-xs text-ink-500">
+            Los campos marcados con{" "}
+            <span className="text-rose-gold">*</span> son obligatorios.
+          </p>
+
           <div className="grid gap-5 sm:grid-cols-2">
             <Field
               label="Nombre completo"
               name="nombre"
               autoComplete="name"
+              required
+              inputRef={refs.nombre as React.RefObject<HTMLInputElement | null>}
               error={errors.nombre}
             />
             <Field
@@ -145,6 +236,8 @@ export default function ContactForm() {
               name="email"
               type="email"
               autoComplete="email"
+              required
+              inputRef={refs.email as React.RefObject<HTMLInputElement | null>}
               error={errors.email}
             />
             <Field
@@ -152,6 +245,10 @@ export default function ContactForm() {
               name="telefono"
               type="tel"
               autoComplete="tel"
+              required
+              inputRef={
+                refs.telefono as React.RefObject<HTMLInputElement | null>
+              }
               error={errors.telefono}
             />
             <div>
@@ -159,24 +256,30 @@ export default function ContactForm() {
                 htmlFor="tratamiento"
                 className="mb-1 block text-sm font-medium text-ink-900"
               >
-                Tratamiento de interés
+                Tratamiento de interés{" "}
+                <span className="text-rose-gold" aria-hidden="true">
+                  *
+                </span>
               </label>
               <select
                 id="tratamiento"
                 name="tratamiento"
+                ref={
+                  refs.tratamiento as React.RefObject<HTMLSelectElement | null>
+                }
+                required
+                aria-required="true"
+                aria-invalid={errors.tratamiento ? true : undefined}
+                aria-describedby={
+                  errors.tratamiento ? "tratamiento-error" : undefined
+                }
                 key={prefill}
                 defaultValue={prefill}
-                aria-invalid={errors.tratamiento ? true : undefined}
                 className="w-full rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm text-ink-900 focus:border-rose-gold focus:outline-none focus:ring-2 focus:ring-rose-gold/30"
               >
                 <option value="" disabled>
                   Selecciona una opción
                 </option>
-                {prefill &&
-                  !categories.some((c) => c.title === prefill) &&
-                  !allTreatments.some(
-                    ({ treatment }) => treatment.name === prefill,
-                  ) && <option value={prefill}>{prefill}</option>}
                 <optgroup label="Categorías">
                   {categories.map((c) => (
                     <option key={c.slug} value={c.title}>
@@ -186,18 +289,19 @@ export default function ContactForm() {
                 </optgroup>
                 <optgroup label="Tratamientos">
                   {allTreatments.map(({ treatment }) => (
-                    <option
-                      key={treatment.slug}
-                      value={treatment.name}
-                    >
+                    <option key={treatment.slug} value={treatment.name}>
                       {treatment.name}
                     </option>
                   ))}
                 </optgroup>
+                <option value="Consulta general">Consulta general</option>
                 <option value="Otro">Otro</option>
               </select>
               {errors.tratamiento && (
-                <p className="mt-1 text-xs text-red-600">
+                <p
+                  id="tratamiento-error"
+                  className="mt-1 text-xs text-red-700"
+                >
                   {errors.tratamiento}
                 </p>
               )}
@@ -212,12 +316,12 @@ export default function ContactForm() {
               <select
                 id="sede"
                 name="sede"
-                defaultValue=""
+                defaultValue="Sin preferencia"
                 className="w-full rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm text-ink-900 focus:border-rose-gold focus:outline-none focus:ring-2 focus:ring-rose-gold/30"
               >
-                <option value="">Sin preferencia</option>
+                <option value="Sin preferencia">Sin preferencia</option>
                 {locations.map((l) => (
-                  <option key={l.name} value={l.name}>
+                  <option key={l.slug} value={l.name}>
                     {l.name}
                   </option>
                 ))}
@@ -230,33 +334,58 @@ export default function ContactForm() {
               htmlFor="mensaje"
               className="mb-1 block text-sm font-medium text-ink-900"
             >
-              Cuéntanos qué buscas
+              Cuéntanos qué buscas{" "}
+              <span className="text-rose-gold" aria-hidden="true">
+                *
+              </span>
             </label>
             <textarea
               id="mensaje"
               name="mensaje"
               rows={4}
+              required
+              aria-required="true"
+              ref={refs.mensaje as React.RefObject<HTMLTextAreaElement | null>}
               aria-invalid={errors.mensaje ? true : undefined}
+              aria-describedby={errors.mensaje ? "mensaje-error" : undefined}
               className="w-full rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm text-ink-900 focus:border-rose-gold focus:outline-none focus:ring-2 focus:ring-rose-gold/30"
             />
             {errors.mensaje && (
-              <p className="mt-1 text-xs text-red-600">{errors.mensaje}</p>
+              <p id="mensaje-error" className="mt-1 text-xs text-red-700">
+                {errors.mensaje}
+              </p>
             )}
           </div>
 
           <label className="mt-5 flex items-start gap-3 text-xs text-ink-700">
             <input
+              id="acepto"
               type="checkbox"
               name="acepto"
-              className="mt-1 h-4 w-4 rounded border-cream-200 text-rose-gold focus:ring-rose-gold"
-              defaultChecked
+              ref={refs.acepto as React.RefObject<HTMLInputElement | null>}
               required
+              aria-required="true"
+              aria-invalid={errors.acepto ? true : undefined}
+              aria-describedby={errors.acepto ? "acepto-error" : undefined}
+              className="mt-1 h-4 w-4 rounded border-cream-200 text-rose-gold focus:ring-rose-gold"
             />
             <span>
-              Acepto ser contactada por {site.brand} para coordinar mi consulta.
-              Los datos se almacenan de forma local para esta demo.
+              Acepto que {site.brand} procese mis datos para contactarme según
+              su{" "}
+              <Link href="/privacidad" className="underline hover:text-rose-gold">
+                política de privacidad
+              </Link>
+              . Esta demo almacena los datos de forma local.
+              <span className="ml-1 text-rose-gold" aria-hidden="true">
+                *
+              </span>
             </span>
           </label>
+          {errors.acepto && (
+            <p id="acepto-error" className="mt-1 text-xs text-red-700">
+              {errors.acepto}
+            </p>
+          )}
 
           <button
             type="submit"
@@ -279,8 +408,11 @@ export default function ContactForm() {
               </span>
             )}
             {serverError && (
-              <span className="text-red-600">
-                Ocurrió un error. Inténtalo nuevamente o escríbenos por WhatsApp.
+              <span className="text-red-700">
+                {serverError.includes("Demasiadas") ||
+                serverError.includes("TOO_MANY")
+                  ? "Demasiadas solicitudes seguidas. Vuelve a intentar en unos minutos."
+                  : "No pudimos enviar tu solicitud. Inténtalo nuevamente o escríbenos por WhatsApp."}
               </span>
             )}
           </p>
@@ -295,12 +427,16 @@ function Field({
   name,
   type = "text",
   autoComplete,
+  required,
+  inputRef,
   error,
 }: {
   label: string;
   name: string;
   type?: string;
   autoComplete?: string;
+  required?: boolean;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
   error?: string;
 }) {
   return (
@@ -310,16 +446,29 @@ function Field({
         className="mb-1 block text-sm font-medium text-ink-900"
       >
         {label}
+        {required && (
+          <span className="ml-0.5 text-rose-gold" aria-hidden="true">
+            *
+          </span>
+        )}
       </label>
       <input
         id={name}
         name={name}
         type={type}
         autoComplete={autoComplete}
+        required={required}
+        aria-required={required ? "true" : undefined}
         aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${name}-error` : undefined}
+        ref={inputRef}
         className="w-full rounded-xl border border-cream-200 bg-white px-4 py-3 text-sm text-ink-900 focus:border-rose-gold focus:outline-none focus:ring-2 focus:ring-rose-gold/30"
       />
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && (
+        <p id={`${name}-error`} className="mt-1 text-xs text-red-700">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

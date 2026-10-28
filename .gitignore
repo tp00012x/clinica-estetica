@@ -8,7 +8,7 @@
 # testing
 /coverage
 
-# database
+# database — only the SQLite file is ignored; prisma/migrations/ is committed
 /prisma/db.sqlite
 /prisma/db.sqlite-journal
 db.sqlite

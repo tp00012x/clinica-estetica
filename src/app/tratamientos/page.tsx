@@ -7,18 +7,19 @@ import Breadcrumbs from "~/components/Breadcrumbs";
 import FreeConsult from "~/components/FreeConsult";
 import CategoryIcon from "~/components/CategoryIcon";
 import { categoriesFull, site } from "~/data/content";
+import { getSiteUrl } from "~/lib/site-url";
 
 export const dynamic = "force-static";
 
 export const metadata: Metadata = {
   title: "Tratamientos",
   description: `Catálogo de tratamientos faciales, corporales, depilación láser y cirugía estética de ${site.brand}. Protocolos personalizados con médicos certificados en Lima.`,
-  alternates: { canonical: `${site.url}/tratamientos` },
+  alternates: { canonical: `${getSiteUrl()}/tratamientos` },
   openGraph: {
     title: `Tratamientos | ${site.brand}`,
     description:
       "Catálogo completo: limpiezas, tratamientos faciales y corporales, depilación láser y cirugía estética.",
-    url: `${site.url}/tratamientos`,
+    url: `${getSiteUrl()}/tratamientos`,
   },
 };
 

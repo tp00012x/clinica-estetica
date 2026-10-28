@@ -1,9 +1,4 @@
-import { locations } from '~/data/content';
-
-function waLink(num: string) {
-  const digits = num.replace(/[^\d]/g, '');
-  return `https://wa.me/${digits}`;
-}
+import { locations } from "~/data/content";
 
 export default function Locations() {
   return (
@@ -20,7 +15,7 @@ export default function Locations() {
 
         <ul className="mt-12 grid gap-6 md:grid-cols-3">
           {locations.map((l) => (
-            <li key={l.name}>
+            <li key={l.slug}>
               <article className="card h-full">
                 <div
                   aria-hidden="true"
@@ -35,7 +30,7 @@ export default function Locations() {
                     <dt className="w-20 shrink-0 text-ink-500">Teléfono</dt>
                     <dd>
                       <a
-                        href={`tel:${l.phone.replace(/[^\d+]/g, '')}`}
+                        href={`tel:${l.phoneHref}`}
                         className="text-ink-900 hover:text-rose-gold"
                       >
                         {l.phone}
@@ -46,7 +41,7 @@ export default function Locations() {
                     <dt className="w-20 shrink-0 text-ink-500">WhatsApp</dt>
                     <dd>
                       <a
-                        href={waLink(l.whatsapp)}
+                        href={`https://wa.me/${l.whatsappHref}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-ink-900 hover:text-rose-gold"

@@ -5,6 +5,7 @@ import { Cormorant_Garamond, Inter } from "next/font/google";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { site } from "~/data/content";
+import { getSiteUrl } from "~/lib/site-url";
 
 const serif = Cormorant_Garamond({
   subsets: ["latin"],
@@ -21,12 +22,13 @@ const sans = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
+  metadataBase: new URL(getSiteUrl()),
   title: {
     default: `${site.brand} — ${site.tagline}`,
     template: `%s | ${site.brand}`,
   },
   description: site.description,
+  applicationName: site.brand,
   keywords: [
     "medicina estética Lima",
     "cirugía plástica Lima",
@@ -37,23 +39,34 @@ export const metadata: Metadata = {
     site.brand,
   ],
   authors: [{ name: site.brand }],
+  // Note: no `alternates.canonical` here on purpose — a canonical on the
+  // root layout cascades to every page including /_not-found, which Google
+  // treats as duplicate content. Each page sets its own canonical.
   openGraph: {
     type: "website",
     locale: "es_PE",
-    url: site.url,
     siteName: site.brand,
     title: `${site.brand} — ${site.tagline}`,
     description: site.description,
+    images: [
+      {
+        url: "/og.svg",
+        width: 1200,
+        height: 630,
+        alt: `${site.brand} — Medicina estética en Lima`,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${site.brand} — ${site.tagline}`,
     description: site.description,
+    images: ["/og.svg"],
   },
   robots: { index: true, follow: true },
-  alternates: { canonical: site.url },
   icons: [
     { rel: "icon", url: "/favicon.svg", type: "image/svg+xml" },
+    { rel: "apple-touch-icon", url: "/favicon.svg" },
   ],
 };
 

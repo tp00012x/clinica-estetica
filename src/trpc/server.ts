@@ -18,6 +18,8 @@ const createContext = cache(async () => {
 
   return createTRPCContext({
     headers: heads,
+    // RSC calls don't come from the public internet, so there's no IP.
+    ip: "server",
   });
 });
 

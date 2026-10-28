@@ -5,18 +5,19 @@ import PageHero from "~/components/PageHero";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import FreeConsult from "~/components/FreeConsult";
 import { site, technology } from "~/data/content";
+import { getSiteUrl } from "~/lib/site-url";
 
 export const dynamic = "force-static";
 
 export const metadata: Metadata = {
   title: "Tecnología",
   description: `Equipos de alta gama en ${site.brand}: láser diodo, radiofrecuencia fraccionada, criolipólisis, HIFU y más. Marcas aprobadas por FDA.`,
-  alternates: { canonical: `${site.url}/tecnologia` },
+  alternates: { canonical: `${getSiteUrl()}/tecnologia` },
   openGraph: {
     title: `Tecnología | ${site.brand}`,
     description:
       "Equipos de última generación aprobados por autoridades internacionales.",
-    url: `${site.url}/tecnologia`,
+    url: `${getSiteUrl()}/tecnologia`,
   },
 };
 
@@ -66,7 +67,7 @@ export default function TecnologiaPage() {
                   key={t.name}
                   className="flex items-start gap-5 rounded-2xl border border-cream-200 bg-white p-5 shadow-soft"
                 >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-blush font-serif text-rose-gold">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-gold font-serif text-cream-50">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <div>

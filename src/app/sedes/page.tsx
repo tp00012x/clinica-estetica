@@ -5,24 +5,20 @@ import PageHero from "~/components/PageHero";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import FreeConsult from "~/components/FreeConsult";
 import { locations, site } from "~/data/content";
+import { getSiteUrl } from "~/lib/site-url";
 
 export const dynamic = "force-static";
 
 export const metadata: Metadata = {
   title: "Sedes",
   description: `Encuentra la sede de ${site.brand} más cercana en Lima: Miraflores, San Isidro y Surco. Teléfono, WhatsApp y horarios.`,
-  alternates: { canonical: `${site.url}/sedes` },
+  alternates: { canonical: `${getSiteUrl()}/sedes` },
   openGraph: {
     title: `Sedes | ${site.brand}`,
     description: "Nuestras sedes en Miraflores, San Isidro y Surco.",
-    url: `${site.url}/sedes`,
+    url: `${getSiteUrl()}/sedes`,
   },
 };
-
-function waLink(num: string) {
-  const digits = num.replace(/[^\d]/g, "");
-  return `https://wa.me/${digits}`;
-}
 
 export default function SedesPage() {
   return (
@@ -76,7 +72,7 @@ export default function SedesPage() {
                       <dt className="w-20 shrink-0 text-ink-500">Teléfono</dt>
                       <dd>
                         <a
-                          href={`tel:${l.phone.replace(/[^\d+]/g, "")}`}
+                          href={`tel:${l.phoneHref}`}
                           className="text-ink-900 hover:text-rose-gold"
                         >
                           {l.phone}
@@ -87,7 +83,7 @@ export default function SedesPage() {
                       <dt className="w-20 shrink-0 text-ink-500">WhatsApp</dt>
                       <dd>
                         <a
-                          href={waLink(l.whatsapp)}
+                          href={`https://wa.me/${l.whatsappHref}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-ink-900 hover:text-rose-gold"

@@ -6,17 +6,18 @@ import PageHero from "~/components/PageHero";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import ContactForm from "~/components/ContactForm";
 import { site } from "~/data/content";
+import { getSiteUrl } from "~/lib/site-url";
 
 export const dynamic = "force-static";
 
 export const metadata: Metadata = {
   title: "Contacto",
   description: `Agenda tu consulta gratuita en ${site.brand}. Déjanos tus datos o escríbenos por WhatsApp — Lima, Perú.`,
-  alternates: { canonical: `${site.url}/contacto` },
+  alternates: { canonical: `${getSiteUrl()}/contacto` },
   openGraph: {
     title: `Contacto | ${site.brand}`,
     description: "Agenda tu consulta gratuita en Lima.",
-    url: `${site.url}/contacto`,
+    url: `${getSiteUrl()}/contacto`,
   },
 };
 

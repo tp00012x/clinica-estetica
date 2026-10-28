@@ -6,17 +6,18 @@ import PageHero from "~/components/PageHero";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import FreeConsult from "~/components/FreeConsult";
 import { promos, site } from "~/data/content";
+import { getSiteUrl } from "~/lib/site-url";
 
 export const dynamic = "force-static";
 
 export const metadata: Metadata = {
   title: "Promociones del mes",
   description: `Promociones vigentes en ${site.brand}: descuentos y paquetes en tratamientos faciales, corporales y depilación láser.`,
-  alternates: { canonical: `${site.url}/promociones` },
+  alternates: { canonical: `${getSiteUrl()}/promociones` },
   openGraph: {
     title: `Promociones del mes | ${site.brand}`,
     description: "Descuentos y paquetes exclusivos vigentes este mes.",
-    url: `${site.url}/promociones`,
+    url: `${getSiteUrl()}/promociones`,
   },
 };
 

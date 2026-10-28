@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
 
-import { allTreatments, categoriesFull, site } from "~/data/content";
+import { allTreatments, categoriesFull } from "~/data/content";
+import { getSiteUrl } from "~/lib/site-url";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
-  const base = site.url.replace(/\/$/, "");
+  const base = getSiteUrl();
 
   const staticRoutes = [
     "",
@@ -14,6 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/tecnologia",
     "/sedes",
     "/contacto",
+    "/privacidad",
   ];
 
   const entries: MetadataRoute.Sitemap = staticRoutes.map((path) => ({

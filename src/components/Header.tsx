@@ -2,17 +2,33 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { nav, site, hero } from "~/data/content";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const firstMobileLinkRef = useRef<HTMLAnchorElement>(null);
 
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    firstMobileLinkRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setOpen(false);
+        toggleRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-cream-200/70 bg-cream-50/85 backdrop-blur">
@@ -58,6 +74,7 @@ export default function Header() {
         </div>
 
         <button
+          ref={toggleRef}
           type="button"
           onClick={() => setOpen((v) => !v)}
           className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-ink-900/15 text-ink-900 md:hidden"
@@ -99,9 +116,10 @@ export default function Header() {
           className="border-t border-cream-200 bg-cream-50 md:hidden"
         >
           <ul className="container-x flex flex-col gap-1 py-3 text-sm text-ink-700">
-            {nav.map((item) => (
+            {nav.map((item, i) => (
               <li key={item.href}>
                 <Link
+                  ref={i === 0 ? firstMobileLinkRef : null}
                   href={item.href}
                   className="block rounded-lg px-3 py-3 transition hover:bg-cream-100 hover:text-rose-gold"
                 >

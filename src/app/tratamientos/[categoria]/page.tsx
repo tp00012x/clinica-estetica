@@ -8,6 +8,7 @@ import Breadcrumbs from "~/components/Breadcrumbs";
 import FreeConsult from "~/components/FreeConsult";
 import CategoryIcon from "~/components/CategoryIcon";
 import { categoriesFull, getCategory, site } from "~/data/content";
+import { getSiteUrl } from "~/lib/site-url";
 
 export const dynamic = "force-static";
 export const dynamicParams = false;
@@ -26,7 +27,7 @@ export async function generateMetadata({
   const { categoria } = await params;
   const cat = getCategory(categoria);
   if (!cat) return { title: "Tratamiento no encontrado" };
-  const url = `${site.url}/tratamientos/${cat.slug}`;
+  const url = `${getSiteUrl()}/tratamientos/${cat.slug}`;
   return {
     title: cat.title,
     description: cat.short,
